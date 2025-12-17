@@ -1,95 +1,5 @@
 create DATABASE FERREMAX;
 use FERREMAX;
--- Tabla de productos y FK - PK
-create table Datos_Producto 
-(
-    Id_Producto int primary key,
-    Nombre_Producto VARCHAR(100),
-    Categoria int,
-    Id_Proveedor int,
-    Presentacion CHAR(15),
-    Unidades_por_Presentacion int,
-    Stock_Presentacion int,
-    Precio DECIMAL(15,2)
-);
--- FK
-alter table Datos_Producto
-add CONSTRAINT id_proveedor_fk
-Foreign Key (Id_Proveedor) 
-REFERENCES Proveedor(Id_Proveedor);
-alter table Datos_Producto
-add CONSTRAINT categoria_fk
-Foreign Key (Categoria) 
-REFERENCES Categorias(Id_Categoria);
--- CHECK
-alter table Datos_Producto
-add CONSTRAINT precio_ck
-check (Precio > 0);
--- UNIQUE
-alter table Datos_Producto
-add constraint nombre_uq
-UNIQUE(Nombre_Producto);
--- NOT NULL
-alter table Datos_Producto
-MODIFY COLUMN Nombre_Producto VARCHAR(100) not null;
-INSERT INTO Datos_Producto
-VALUES
-(1,'Martillo Acero 16oz',1,2,'UNIDAD',12,50,120.00),
-(2,'Destornillador Plano',1,11,'DOCENA',12,40,85.00),
-(3,'Taladro Electrico 800W',2,2,'CAJA',1,30,950.00),
-(4,'Amoladora Industrial',2,9,'CAJA',1,25,870.00),
-(5,'Clavo Acero 2p',16,26,'CAJA',500,60,75.00),
-(6,'Clavo Acero 3p',16,26,'CAJA',500,55,82.00),
-(7,'Tornillo Rosca Fina',3,27,'CAJA',300,70,110.00),
-(8,'Tornillo Rosca Gruesa',3,27,'CAJA',300,65,115.00),
-(9,'Cable THHN 12',24,16,'ROLLO',100,40,320.00),
-(10,'Cable THHN 14',24,16,'ROLLO',100,45,280.00),
-
-(11,'Interruptor Simple',25,39,'CAJA',50,35,90.00),
-(12,'Interruptor Doble',25,39,'CAJA',50,30,130.00),
-(13,'Tubo PVC 1p',5,4,'PAQUETE',20,60,140.00),
-(14,'Tubo PVC 2p',5,4,'PAQUETE',15,55,210.00),
-(15,'Pintura Latex Blanca',6,5,'BALDE',1,40,380.00),
-(16,'Pintura Latex Azul',6,5,'BALDE',1,35,395.00),
-(17,'Cemento Portland',7,1,'SACO',1,120,98.00),
-(18,'Arena Lavada',7,1,'SACO',1,100,65.00),
-(19,'Casco Seguridad',8,6,'PAQUETE',10,25,260.00),
-(20,'Guantes Industriales',8,6,'PAQUETE',12,30,180.00),
-
-(21,'Adhesivo Epoxico',10,15,'PAQUETE',6,40,150.00),
-(22,'Silicon Transparente',29,33,'CAJA',24,45,210.00),
-(23,'Lampara LED 18W',11,40,'CAJA',20,50,220.00),
-(24,'Lampara LED 36W',11,40,'CAJA',20,45,360.00),
-(25,'Cerradura Doble',12,19,'CAJA',10,30,420.00),
-(26,'Lija Grano 80',13,36,'PAQUETE',50,60,95.00),
-(27,'Lija Grano 120',13,36,'PAQUETE',50,55,100.00),
-(28,'Aceite Lubricante',14,23,'CAJA',12,40,260.00),
-(29,'Broca Concreto 8mm',26,37,'PAQUETE',10,50,135.00),
-(30,'Broca Concreto 10mm',26,37,'PAQUETE',10,45,165.00),
-
-(31,'Disco Corte Metal',27,36,'PAQUETE',10,60,190.00),
-(32,'Rodamiento 6204',28,25,'CAJA',20,35,240.00),
-(33,'Madera Triplex',19,30,'PAQUETE',5,30,520.00),
-(34,'Electrodo Soldar',20,20,'CAJA',5,40,310.00),
-(35,'Escalera Aluminio',21,31,'UNIDAD',1,15,850.00),
-(36,'Extractor Aire',22,32,'CAJA',1,20,780.00),
-(37,'Bomba Agua 1HP',23,18,'CAJA',1,18,1450.00),
-(38,'Valvula Esfera 1p',33,28,'CAJA',20,45,210.00),
-(39,'Cinta Aislante',35,29,'PAQUETE',12,70,75.00),
-(40,'Medidor Voltaje',34,24,'CAJA',1,25,680.00),
-
-(41,'Tuerca Hexagonal',17,8,'CAJA',400,60,95.00),
-(42,'Perno Acero 1p',18,9,'CAJA',200,55,140.00),
-(43,'Malla Electrosoldada',30,34,'ROLLO',1,20,980.00),
-(44,'Andamio Modular',31,17,'UNIDAD',1,10,3200.00),
-(45,'Tanque Agua 500L',32,35,'UNIDAD',1,12,1750.00),
-(46,'Cinta Doble Faz',35,29,'PAQUETE',12,65,130.00),
-(47,'Guantes Nitrilo',15,38,'PAQUETE',20,50,210.00),
-(48,'Chaleco Reflectivo',15,38,'PAQUETE',10,40,260.00),
-(49,'Pintura Esmalte',6,13,'BALDE',1,30,420.00),
-(50,'Sellador Impermeable',29,33,'BALDE',1,25,510.00);
-
-
 -- Tabla de categorias y FK - PK
 create table Categorias
 (
@@ -220,7 +130,7 @@ create table Clientes
     Nombre_Cliente VARCHAR(30),
     Razon_Social CHAR(4),
     Contacto CHAR(10),
-    Correo CHAR(20),
+    Correo CHAR(50),
     Direccion VARCHAR(50),
     Descuento_Asociado CHAR(2)
 );
@@ -239,60 +149,173 @@ add constraint correo_cliente_uq
 UNIQUE(Correo);
 INSERT INTO Clientes
 VALUES
-('1790010010001','Juan Perez','MAYO','0991111111','juan1@correo.com','Av. Amazonas 123','SI'),
-('1790010010002','Carlos Mena','DIST','0991111112','juan2@correo.com','Av. Colon 456','SI'),
-('1790010010003','Luis Torres','MAYO','0991111113','juan3@correo.com','Av. Patria 789','SI'),
-('1790010010004','Ana Ruiz','EMPR','0991111114','juan4@correo.com','Calle 10 Agosto','SI'),
-('1790010010005','Maria Lopez','DIST','0991111115','juan5@correo.com','Av. NNUU','SI'),
-('1790010010006','Pedro Castro','MAYO','0991111116','juan6@correo.com','Av. Occidental','SI'),
-('1790010010007','Jose Mora','CONT','0991111117','juan7@correo.com','Av. Moran','SI'),
-('1790010010008','Daniel Rios','DIST','0991111118','juan8@correo.com','Av. Eloy Alfaro','SI'),
-('1790010010009','Paola Vera','MAYO','0991111119','juan9@correo.com','Av. America','SI'),
-('1790010010010','Carmen Soto','DIST','0991111120','juan10@correo.com','Av. Mariscal','SI'),
+('1790010010001','Juan Perez','MAYO','0991111111','juan.perez@correo.com','Av. Amazonas 123','SI'),
+('1790010010002','Carlos Mena','DIST','0991111112','carlos.mena@correo.com','Av. Colon 456','SI'),
+('1790010010003','Luis Torres','MAYO','0991111113','luis.torres@correo.com','Av. Patria 789','SI'),
+('1790010010004','Ana Ruiz','EMPR','0991111114','ana.ruiz@correo.com','Calle 10 Agosto','SI'),
+('1790010010005','Maria Lopez','DIST','0991111115','maria.lopez@correo.com','Av. NNUU','SI'),
+('1790010010006','Pedro Castro','MAYO','0991111116','pedro.castro@correo.com','Av. Occidental','SI'),
+('1790010010007','Jose Mora','CONT','0991111117','jose.mora@correo.com','Av. Moran','SI'),
+('1790010010008','Daniel Rios','DIST','0991111118','daniel.rios@correo.com','Av. Eloy Alfaro','SI'),
+('1790010010009','Paola Vera','MAYO','0991111119','paola.vera@correo.com','Av. America','SI'),
+('1790010010010','Carmen Soto','DIST','0991111120','carmen.soto@correo.com','Av. Mariscal','SI'),
 
-('1790010010011','Miguel Paz','MAYO','0991111121','juan11@correo.com','Av. Shyris','SI'),
-('1790010010012','Sofia Luna','DIST','0991111122','juan12@correo.com','Av. Naciones Unidas','SI'),
-('1790010010013','Ricardo Leon','MAYO','0991111123','juan13@correo.com','Av. Republica','SI'),
-('1790010010014','Andres Gil','DIST','0991111124','juan14@correo.com','Av. La Prensa','SI'),
-('1790010010015','Patricia Solis','EMPR','0991111125','juan15@correo.com','Av. Galo Plaza','SI'),
-('1790010010016','Diego Navas','MAYO','0991111126','juan16@correo.com','Av. Granados','SI'),
-('1790010010017','Veronica Cruz','DIST','0991111127','juan17@correo.com','Av. 6 Diciembre','SI'),
-('1790010010018','Marco Ortiz','MAYO','0991111128','juan18@correo.com','Av. Maldonado','SI'),
-('1790010010019','Rosa Paredes','DIST','0991111129','juan19@correo.com','Av. Simón Bolívar','SI'),
-('1790010010020','Fernando Vega','MAYO','0991111130','juan20@correo.com','Av. Occidental','SI'),
+('1790010010011','Miguel Paz','MAYO','0991111121','miguel.paz@correo.com','Av. Shyris','SI'),
+('1790010010012','Sofia Luna','DIST','0991111122','sofia.luna@correo.com','Av. Naciones Unidas','SI'),
+('1790010010013','Ricardo Leon','MAYO','0991111123','ricardo.leon@correo.com','Av. Republica','SI'),
+('1790010010014','Andres Gil','DIST','0991111124','andres.gil@correo.com','Av. La Prensa','SI'),
+('1790010010015','Patricia Solis','EMPR','0991111125','patricia.solis@correo.com','Av. Galo Plaza','SI'),
+('1790010010016','Diego Navas','MAYO','0991111126','diego.navas@correo.com','Av. Granados','SI'),
+('1790010010017','Veronica Cruz','DIST','0991111127','veronica.cruz@correo.com','Av. 6 Diciembre','SI'),
+('1790010010018','Marco Ortiz','MAYO','0991111128','marco.ortiz@correo.com','Av. Maldonado','SI'),
+('1790010010019','Rosa Paredes','DIST','0991111129','rosa.paredes@correo.com','Av. Simón Bolívar','SI'),
+('1790010010020','Fernando Vega','MAYO','0991111130','fernando.vega@correo.com','Av. Occidental','SI'),
 
-('1790010010021','Julio Moya','MINO','0991111131','juan21@correo.com','Calle A','NO'),
-('1790010010022','Karla Rivas','MINO','0991111132','juan22@correo.com','Calle B','NO'),
-('1790010010023','Oscar Lima','CONT','0991111133','juan23@correo.com','Calle C','NO'),
-('1790010010024','Nancy Pino','MINO','0991111134','juan24@correo.com','Calle D','NO'),
-('1790010010025','Hugo Meza','EMPR','0991111135','juan25@correo.com','Calle E','NO'),
-('1790010010026','Daniela Paz','MINO','0991111136','juan26@correo.com','Calle F','NO'),
-('1790010010027','Kevin Ruiz','CONT','0991111137','juan27@correo.com','Calle G','NO'),
-('1790010010028','Lucia Mora','MINO','0991111138','juan28@correo.com','Calle H','NO'),
-('1790010010029','Paulo Gil','MINO','0991111139','juan29@correo.com','Calle I','NO'),
-('1790010010030','Sandra Leon','EMPR','0991111140','juan30@correo.com','Calle J','NO'),
+('1790010010021','Julio Moya','MINO','0991111131','julio.moya@correo.com','Calle A','NO'),
+('1790010010022','Karla Rivas','MINO','0991111132','karla.rivas@correo.com','Calle B','NO'),
+('1790010010023','Oscar Lima','CONT','0991111133','oscar.lima@correo.com','Calle C','NO'),
+('1790010010024','Nancy Pino','MINO','0991111134','nancy.pino@correo.com','Calle D','NO'),
+('1790010010025','Hugo Meza','EMPR','0991111135','hugo.meza@correo.com','Calle E','NO'),
+('1790010010026','Daniela Paz','MINO','0991111136','daniela.paz@correo.com','Calle F','NO'),
+('1790010010027','Kevin Ruiz','CONT','0991111137','kevin.ruiz@correo.com','Calle G','NO'),
+('1790010010028','Lucia Mora','MINO','0991111138','lucia.mora@correo.com','Calle H','NO'),
+('1790010010029','Paulo Gil','MINO','0991111139','paulo.gil@correo.com','Calle I','NO'),
+('1790010010030','Sandra Leon','EMPR','0991111140','sandra.leon@correo.com','Calle J','NO'),
 
-('1790010010031','Ivan Torres','MINO','0991111141','juan31@correo.com','Calle K','NO'),
-('1790010010032','Ruth Solano','MINO','0991111142','juan32@correo.com','Calle L','NO'),
-('1790010010033','Alex Herrera','CONT','0991111143','juan33@correo.com','Calle M','NO'),
-('1790010010034','Nadia Flores','MINO','0991111144','juan34@correo.com','Calle N','NO'),
-('1790010010035','Jorge Silva','EMPR','0991111145','juan35@correo.com','Calle O','NO'),
-('1790010010036','Diana Carrillo','MINO','0991111146','juan36@correo.com','Calle P','NO'),
-('1790010010037','Cristian Vaca','MINO','0991111147','juan37@correo.com','Calle Q','NO'),
-('1790010010038','Monica Espinoza','CONT','0991111148','juan38@correo.com','Calle R','NO'),
-('1790010010039','Wilson Tapia','MINO','0991111149','juan39@correo.com','Calle S','NO'),
-('1790010010040','Lorena Aguilar','MINO','0991111150','juan40@correo.com','Calle T','NO'),
+('1790010010031','Ivan Torres','MINO','0991111141','ivan.torres@correo.com','Calle K','NO'),
+('1790010010032','Ruth Solano','MINO','0991111142','ruth.solano@correo.com','Calle L','NO'),
+('1790010010033','Alex Herrera','CONT','0991111143','alex.herrera@correo.com','Calle M','NO'),
+('1790010010034','Nadia Flores','MINO','0991111144','nadia.flores@correo.com','Calle N','NO'),
+('1790010010035','Jorge Silva','EMPR','0991111145','jorge.silva@correo.com','Calle O','NO'),
+('1790010010036','Diana Carrillo','MINO','0991111146','diana.carrillo@correo.com','Calle P','NO'),
+('1790010010037','Cristian Vaca','MINO','0991111147','cristian.vaca@correo.com','Calle Q','NO'),
+('1790010010038','Monica Espinoza','CONT','0991111148','monica.espinoza@correo.com','Calle R','NO'),
+('1790010010039','Wilson Tapia','MINO','0991111149','wilson.tapia@correo.com','Calle S','NO'),
+('1790010010040','Lorena Aguilar','MINO','0991111150','lorena.aguilar@correo.com','Calle T','NO'),
 
-('1790010010041','Mario Nieto','MINO','0991111151','juan41@correo.com','Calle U','NO'),
-('1790010010042','Rocio Diaz','MINO','0991111152','juan42@correo.com','Calle V','NO'),
-('1790010010043','Edgar Cobo','CONT','0991111153','juan43@correo.com','Calle W','NO'),
-('1790010010044','Pamela Vera','MINO','0991111154','juan44@correo.com','Calle X','NO'),
-('1790010010045','Fabian Ruiz','MINO','0991111155','juan45@correo.com','Calle Y','NO'),
-('1790010010046','Adriana Paz','MINO','0991111156','juan46@correo.com','Calle Z','NO'),
-('1790010010047','Jonathan Silva','CONT','0991111157','juan47@correo.com','Calle AA','NO'),
-('1790010010048','Valeria Soto','MINO','0991111158','juan48@correo.com','Calle AB','NO'),
-('1790010010049','Pablo Moya','MINO','0991111159','juan49@correo.com','Calle AC','NO'),
-('1790010010050','Camila Rojas','MINO','0991111160','juan50@correo.com','Calle AD','NO');
+('1790010010041','Mario Nieto','MINO','0991111151','mario.nieto@correo.com','Calle U','NO'),
+('1790010010042','Rocio Diaz','MINO','0991111152','rocio.diaz@correo.com','Calle V','NO'),
+('1790010010043','Edgar Cobo','CONT','0991111153','edgar.cobo@correo.com','Calle W','NO'),
+('1790010010044','Pamela Vera','MINO','0991111154','pamela.vera@correo.com','Calle X','NO'),
+('1790010010045','Fabian Ruiz','MINO','0991111155','fabian.ruiz@correo.com','Calle Y','NO'),
+('1790010010046','Adriana Paz','MINO','0991111156','adriana.paz@correo.com','Calle Z','NO'),
+('1790010010047','Jonathan Silva','CONT','0991111157','jonathan.silva@correo.com','Calle AA','NO'),
+('1790010010048','Valeria Soto','MINO','0991111158','valeria.soto@correo.com','Calle AB','NO'),
+('1790010010049','Pablo Moya','MINO','0991111159','pablo.moya@correo.com','Calle AC','NO'),
+('1790010010050','Camila Rojas','MINO','0991111160','camila.rojas@correo.com','Calle AD','NO');
+
+
+-- Tabla de promociones
+create table Promocion
+(
+    Id_Promocion int primary key,
+    Nombre_Promocion VARCHAR(30),
+    Tipo VARCHAR(20),
+    Condicion_Minima VARCHAR(30),
+    Porcentaje_Descuento DECIMAL(5,2),
+    Fecha_Inicio DATETIME,
+    Fecha_Fin DATETIME
+);
+-- NOT NULL
+alter table Promocion
+MODIFY COLUMN Nombre_Promocion VARCHAR(30) not null;
+INSERT INTO Promocion
+VALUES
+(1,'Volumen Cemento','POR VOLUMEN','Minimo 10 SACOS',10.00,'2025-01-01','2025-12-12'),
+(2,'Promo Herramientas','POR PRODUCTO','Minimo 5 CAJAS',12.00,'2025-02-01','2025-06-30'),
+(3,'Temporada Pinturas','POR TEMPORADA','Minimo 8 PAQUETES',15.00,'2025-03-01','2025-09-30'),
+(4,'Seguridad Industrial','POR PRODUCTO','Minimo 6 DOCENAS',18.00,'2025-04-01','2025-10-31'),
+(5,'Electricidad Mayorista','POR VOLUMEN','Minimo 20 UNIDADES',20.00,'2025-05-01','2025-12-12');
+
+
+-- Tabla de productos y FK - PK
+create table Datos_Producto 
+(
+    Id_Producto int primary key,
+    Nombre_Producto VARCHAR(100),
+    Categoria int,
+    Id_Proveedor int,
+    Presentacion CHAR(15),
+    Unidades_por_Presentacion int,
+    Stock_Presentacion int,
+    Precio DECIMAL(15,2)
+);
+-- FK
+alter table Datos_Producto
+add CONSTRAINT id_proveedor_fk
+Foreign Key (Id_Proveedor) 
+REFERENCES Proveedor(Id_Proveedor);
+alter table Datos_Producto
+add CONSTRAINT categoria_fk
+Foreign Key (Categoria) 
+REFERENCES Categorias(Id_Categoria);
+-- CHECK
+alter table Datos_Producto
+add CONSTRAINT precio_ck
+check (Precio > 0);
+-- UNIQUE
+alter table Datos_Producto
+add constraint nombre_uq
+UNIQUE(Nombre_Producto);
+-- NOT NULL
+alter table Datos_Producto
+MODIFY COLUMN Nombre_Producto VARCHAR(100) not null;
+INSERT INTO Datos_Producto
+VALUES
+(1,'Martillo Acero 16oz',1,2,'UNIDAD',12,50,120.00),
+(2,'Destornillador Plano',1,11,'DOCENA',12,40,85.00),
+(3,'Taladro Electrico 800W',2,2,'CAJA',1,30,950.00),
+(4,'Amoladora Industrial',2,9,'CAJA',1,25,870.00),
+(5,'Clavo Acero 2p',16,26,'CAJA',500,60,75.00),
+(6,'Clavo Acero 3p',16,26,'CAJA',500,55,82.00),
+(7,'Tornillo Rosca Fina',3,27,'CAJA',300,70,110.00),
+(8,'Tornillo Rosca Gruesa',3,27,'CAJA',300,65,115.00),
+(9,'Cable THHN 12',24,16,'ROLLO',100,40,320.00),
+(10,'Cable THHN 14',24,16,'ROLLO',100,45,280.00),
+
+(11,'Interruptor Simple',25,39,'CAJA',50,35,90.00),
+(12,'Interruptor Doble',25,39,'CAJA',50,30,130.00),
+(13,'Tubo PVC 1p',5,4,'PAQUETE',20,60,140.00),
+(14,'Tubo PVC 2p',5,4,'PAQUETE',15,55,210.00),
+(15,'Pintura Latex Blanca',6,5,'BALDE',1,40,380.00),
+(16,'Pintura Latex Azul',6,5,'BALDE',1,35,395.00),
+(17,'Cemento Portland',7,1,'SACO',1,120,98.00),
+(18,'Arena Lavada',7,1,'SACO',1,100,65.00),
+(19,'Casco Seguridad',8,6,'PAQUETE',10,25,260.00),
+(20,'Guantes Industriales',8,6,'PAQUETE',12,30,180.00),
+
+(21,'Adhesivo Epoxico',10,15,'PAQUETE',6,40,150.00),
+(22,'Silicon Transparente',29,33,'CAJA',24,45,210.00),
+(23,'Lampara LED 18W',11,40,'CAJA',20,50,220.00),
+(24,'Lampara LED 36W',11,40,'CAJA',20,45,360.00),
+(25,'Cerradura Doble',12,19,'CAJA',10,30,420.00),
+(26,'Lija Grano 80',13,36,'PAQUETE',50,60,95.00),
+(27,'Lija Grano 120',13,36,'PAQUETE',50,55,100.00),
+(28,'Aceite Lubricante',14,23,'CAJA',12,40,260.00),
+(29,'Broca Concreto 8mm',26,37,'PAQUETE',10,50,135.00),
+(30,'Broca Concreto 10mm',26,37,'PAQUETE',10,45,165.00),
+
+(31,'Disco Corte Metal',27,36,'PAQUETE',10,60,190.00),
+(32,'Rodamiento 6204',28,25,'CAJA',20,35,240.00),
+(33,'Madera Triplex',19,30,'PAQUETE',5,30,520.00),
+(34,'Electrodo Soldar',20,20,'CAJA',5,40,310.00),
+(35,'Escalera Aluminio',21,31,'UNIDAD',1,15,850.00),
+(36,'Extractor Aire',22,32,'CAJA',1,20,780.00),
+(37,'Bomba Agua 1HP',23,18,'CAJA',1,18,1450.00),
+(38,'Valvula Esfera 1p',33,28,'CAJA',20,45,210.00),
+(39,'Cinta Aislante',35,29,'PAQUETE',12,70,75.00),
+(40,'Medidor Voltaje',34,24,'CAJA',1,25,680.00),
+
+(41,'Tuerca Hexagonal',17,8,'CAJA',400,60,95.00),
+(42,'Perno Acero 1p',18,9,'CAJA',200,55,140.00),
+(43,'Malla Electrosoldada',30,34,'ROLLO',1,20,980.00),
+(44,'Andamio Modular',31,17,'UNIDAD',1,10,3200.00),
+(45,'Tanque Agua 500L',32,35,'UNIDAD',1,12,1750.00),
+(46,'Cinta Doble Faz',35,29,'PAQUETE',12,65,130.00),
+(47,'Guantes Nitrilo',15,38,'PAQUETE',20,50,210.00),
+(48,'Chaleco Reflectivo',15,38,'PAQUETE',10,40,260.00),
+(49,'Pintura Esmalte',6,13,'BALDE',1,30,420.00),
+(50,'Sellador Impermeable',29,33,'BALDE',1,25,510.00);
 
 
 --Tabla de descuento a clientes frecuentes y FK - PK
@@ -399,8 +422,7 @@ create table Detalle_Compra
     Id_Producto int,
     Cantidad_Presentaciones int,
     Costo_Presentacion DECIMAL(15,2),
-    Subtotal DECIMAL(15,2),
-    IVA DECIMAL(15,2)
+    Subtotal DECIMAL(15,2)
 );
 -- FK
 alter table Detalle_Compra
@@ -411,9 +433,6 @@ alter table Detalle_Compra
 add CONSTRAINT id_producto_fk
 Foreign Key (Id_Producto) 
 REFERENCES Datos_Producto(Id_Producto);
--- DEFAULT
-alter table Detalle_Compra
-MODIFY COLUMN IVA DECIMAL(15,2) default 0.15;
 -- CHECK
 alter table Detalle_Compra
 add CONSTRAINT subtotal_ck
@@ -422,7 +441,6 @@ alter table Detalle_Compra
 add CONSTRAINT costo_presentacion_ck
 check (Costo_Presentacion > 0);
 INSERT INTO Detalle_Compra
-(Id_Detalle, Id_Compra, Id_Producto, Cantidad_Presentaciones, Costo_Presentacion, Subtotal)
 VALUES
 (1,1,17,50,95.00,4750.00),
 (2,1,18,40,60.00,2400.00),
@@ -610,7 +628,8 @@ create table Detalle_Factura
     Id_Producto int,
     Cantidad_Presentaciones int,
     Precio DECIMAL(15,2),
-    Subtotal DECIMAL(15,2)
+    Subtotal DECIMAL(15,2),
+    IVA DECIMAL(15,2)
 );
 -- FK
 alter table Detalle_Factura
@@ -621,6 +640,9 @@ alter table Detalle_Factura
 add CONSTRAINT id_producto_2_fk
 Foreign Key (Id_Producto) 
 REFERENCES Datos_Producto(Id_Producto);
+-- DEFAULT
+alter table Detalle_Factura
+MODIFY COLUMN IVA DECIMAL(15,2) default 0.15;
 -- CHECK
 alter table Detalle_Factura
 add CONSTRAINT subtotal_2_ck
@@ -629,6 +651,7 @@ alter table Detalle_Factura
 add CONSTRAINT Precio_2_ck
 check (Precio > 0);
 INSERT INTO Detalle_Factura
+(Id_Detalle_Factura, Id_Factura, Id_Producto, Cantidad_Presentaciones, Precio, Subtotal)
 VALUES
 (1,1,17,50,95.00,4750.00),
 (2,1,18,40,60.00,2400.00),
@@ -736,27 +759,5 @@ VALUES
 (75,30,35,2,820.00,1640.00);
 
 
--- Tabla de promociones
-create table Promocion
-(
-    Id_Promocion int primary key,
-    Nombre_Promocion VARCHAR(30),
-    Tipo VARCHAR(20),
-    Condicion_Minima VARCHAR(30),
-    Porcentaje_Descuento DECIMAL(5,2),
-    Fecha_Inicio DATETIME,
-    Fecha_Fin DATETIME
-);
--- NOT NULL
-alter table Promocion
-MODIFY COLUMN Nombre_Promocion VARCHAR(30) not null;
-INSERT INTO Promocion
-VALUES
-(1,'Volumen Cemento','POR VOLUMEN','Minimo 10 SACOS',10.00,'2025-01-01','2025-12-12'),
-(2,'Promo Herramientas','POR PRODUCTO','Minimo 5 CAJAS',12.00,'2025-02-01','2025-06-30'),
-(3,'Temporada Pinturas','POR TEMPORADA','Minimo 8 PAQUETES',15.00,'2025-03-01','2025-09-30'),
-(4,'Seguridad Industrial','POR PRODUCTO','Minimo 6 DOCENAS',18.00,'2025-04-01','2025-10-31'),
-(5,'Electricidad Mayorista','POR VOLUMEN','Minimo 20 UNIDADES',20.00,'2025-05-01','2025-12-12');
-
-
 -- Extra
+show tables;
