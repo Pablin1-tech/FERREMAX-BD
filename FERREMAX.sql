@@ -77,6 +77,9 @@ add constraint tiempo_entrega_val
 check (
     Tiempo_Entrega in ('15D', 'MEN', 'SEM', 'ANU')
 );
+alter table Proveedor
+add constraint correo_proveedor_uq
+UNIQUE(Correo);
 INSERT INTO Proveedor
 VALUES
 (1,'Holcim Ecuador','MATERIALES DE CONSTRUCCION','0991234567','holcim@ec.com','SEM'),
