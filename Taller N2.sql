@@ -1,293 +1,183 @@
--- Caso: Consultar los pacientes del plan de medicina frecuente
---       en una lista que incluya:
---       Nombre y cedula del paciente, nombre e ID de la medicina,
---       Descuento
-select Cedula_cliente as Cedula, (select nombre from Clientes where cedula = Cedula_cliente) as Cliente, Id_medicamento as ID, (select Nombre from Medicinas where Id = Id_medicamento) as Medicina, descuento from pacientes_permanentes;
-select Id_medicamento from Pacientes_permanentes where Via_administracion= 'Oral' AND Descuento > (select Descuento from Pacientes_permanentes where Cedula_cliente='0100000053');
+-- TALLER N° 2: 
+-- Elaborar una consulta sQL para obtener una lista de registros con:
 
--- Caso: listado de pacientes del plan pacientes permanentes
---       presente el precio final de la medicina junto con el 
---       precio sin descuento
+-- 1. Condición de igualdad aplicada a un atributo de tipo entero
+SELECT *
+FROM Datos_Producto
+WHERE Categoria = 6;
 
-select 
-Cedula_cliente as Cedula, (select nombre from Clientes where cedula = Cedula_cliente) as Cliente, 
-Id_medicamento as ID, 
-(select Nombre from Medicinas where Id = Id_medicamento) as Medicina, 
-(SELECT precio from Medicinas where Id = Id_Medicamento) as Precio_original, 
-descuento, (SELECT Precio from Medicinas where Id = Id_Medicamento) * descuento as Descontado
-from pacientes_permanentes;
+-- 2. Condicion de igualdad aplicada a un atributo de tipo cadena de caracteres
+SELECT *
+FROM Clientes
+WHERE Razon_Social = 'MAYO';
 
+-- 3. Condicion de mayor/igual que aplicada a un atributo de tipo decimal
+SELECT Id_Producto, Nombre_Producto, Precio
+FROM Datos_Producto
+WHERE Precio >= 150.00;
+
+-- 4. Condicion de distinto aplicada a un atributo de tipo cadena de caracteres
+SELECT *
+FROM Proveedor
+WHERE Nombre_Proveedor <> 'Disensa';
+
+-- 5. Condicion de pertenencia a una lista de valores (IN) aplicada a
+--    un atributo de tipo cadena de caracteres
+SELECT *
+FROM Categorias
+WHERE Rotacion_en_Ventas IN ('ALTA', 'BAJA');
+
+-- 6. Dos condiciones a su eleccion, unidas con el operador AND
+SELECT Nombre_Producto, Stock_Presentacion, Precio
+FROM Datos_Producto
+WHERE Stock_Presentacion > 45
+  AND Precio < 800;
+
+-- 7. Dos condiciones similares a la anterior, proyecta en tres columnas
+--    y crear una vista para contenerla
+CREATE VIEW V1 as
 SELECT 
-    Cedula_cliente AS Cedula,
-    (SELECT nombre FROM Clientes WHERE cedula = Cedula_cliente) AS Cliente, 
-    Id_medicamento AS ID, 
-    (SELECT Nombre FROM Medicinas WHERE Id = Id_medicamento) AS Medicina, 
-    (SELECT precio FROM Medicinas WHERE Id = Id_Medicamento) AS Precio_original, 
-    descuento,
-    (SELECT Precio FROM Medicinas WHERE Id = Id_Medicamento) * descuento AS Descontado,
-    (SELECT Precio FROM Medicinas WHERE Id = Id_Medicamento)
-      - ((SELECT Precio FROM Medicinas WHERE Id = Id_Medicamento) * descuento)
-      AS Precio_final
-FROM pacientes_permanentes;
+    dp.Id_Producto,
+    dp.Nombre_Producto,
+    dp.Precio,
+    dp.Stock_Presentacion,
+    c.Nombre_Categoria AS categoria
+FROM Datos_Producto dp
+JOIN Categorias c ON dp.Categoria = c.Id_Categoria
+WHERE dp.Precio > 150
+  AND dp.Stock_Presentacion > 40;
 
-select * from pacientes_permanentes;
+SELECT * from V1;
 
--- Caso: Las medicinas comerciales pueden ser reemplazadas
---       por sus correspondientes genericas.
---       Elaborar un listado que compare precios
---       de medicinas comerciales y genericas
+-- 8. Dos condiciones a su eleccion, unidas con el operador OR
+SELECT Cedula, Nombre_Cliente, Direccion, Contacto
+FROM Clientes
+WHERE Razon_Social = 'CONT'
+   OR Descuento_Asociado = 'SI';
 
-select * from medicinas;
-select * from clasificacion_medicinas;
-SELECT
-    clasificacion_medicinas.Medicina_COM AS id_comercial,
-
-    (SELECT nombre
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_COM) AS medicina_comercial,
-
-    (SELECT precio
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_COM) AS precio_comercial,
-
-    clasificacion_medicinas.Medicina_GEN AS id_generica,
-
-    (SELECT nombre
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_GEN) AS medicina_generica,
-
-    (SELECT precio
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_GEN) AS precio_generico
-FROM clasificacion_medicinas;
-
--- Caso JOIN
-SELECT
-    pp.cedula_cliente AS cedula,
-    c.nombre AS cliente,
-    m.nombre AS medicamento,
-    m.precio AS precio_original,
-    pp.descuento,
-
-    (m.precio * pp.descuento / 100) AS valor_descuento,
-
-    (m.precio - (m.precio * pp.descuento / 100)) AS precio_final
-
-FROM pacientes_permanentes pp
-JOIN clientes c
-    ON pp.cedula_cliente = c.cedula
-JOIN medicinas m
-    ON pp.id_medicamento = m.id;
+-- 9. Una condicion a su eleccion y el operador NOT
+SELECT dp.Id_Producto, dp.Nombre_Producto, c.Nombre_Categoria AS Categoria
+FROM Datos_Producto dp
+JOIN Categorias c ON dp.Categoria = c.Id_Categoria
+WHERE NOT dp.Categoria = 6;
 
 SELECT
-    cm.medicina_COM AS id_comercial,
-    mc.nombre       AS medicina_comercial,
-    mc.precio       AS precio_comercial,
+  Id_Producto,
+  Nombre_Producto,
+  Precio
+from Datos_Producto
+where not Precio > 150;
 
-    cm.medicina_GEN AS id_generica,
-    mg.nombre       AS medicina_generica,
-    mg.precio       AS precio_generico
-FROM clasificacion_medicinas cm
-JOIN medicinas mc
-    ON mc.id = cm.medicina_COM
-JOIN medicinas mg
-    ON mg.id = cm.medicina_GEN;
-
--- Caso: Crear todas las combinaciones posibles entre la tabla 
---       de clientes y pacientes permanentes
---       Producto Cartesiano
-
-SELECT * FROM
-    clientes,
-    pacientes_permanentes
-WHERE
-    clientes.Cedula = pacientes_permanentes.Cedula_cliente;
-
-SELECT * FROM
-    Medicinas,
-    Pacientes_permanentes
-WHERE
-    Medicinas.Id = pacientes_permanentes.Id_Medicamento;
+-- 10. Operacion JOIN en base a dos tablas que dispongan de FKs
 SELECT 
-    c.Cedula,
-    c.Nombre,
-    m.Nombre,
-    pp.descuento,
-    m.Tipo  
-from
-    clientes c,
-    Medicinas m,  
-    pacientes_permanentes pp
-WHERE
-    m.id = pp.Id_medicamento
-and c.cedula = pp.Cedula_cliente;
+    f.Id_Factura,
+    f.Fecha_Venta,
+    f.Forma_Pago,
+    c.Nombre_Cliente AS Cliente,
+    c.Contacto
+FROM Factura f
+JOIN Clientes c ON f.Cedula = c.Cedula;
 
--- JOIN
+-- 11. Operacion JOIN proyectada en tres columnas y 
+--     con una vista para contenerlas
+CREATE VIEW V2 AS
 SELECT 
-    c.Cedula,
-    c.Nombre,
-    m.Nombre,
-    pp.descuento,
-    m.Tipo  
-from 
-    pacientes_permanentes pp
-JOIN clientes c on c.cedula = pp.Cedula_cliente
-JOIN medicinas m ON m.id = pp.Id_medicamento;
+    f.Id_Factura,
+    c.Nombre_Cliente AS Cliente,
+    c.Contacto,
+    c.Correo,
+    f.Fecha_Venta
+FROM Factura f
+JOIN Clientes c ON f.Cedula = c.Cedula;
 
-SELECT
-    mgen.id     AS id_generica,
-    mgen.nombre AS medicina_generica,
-    mgen.precio AS precio_generico,
+SELECT * from V2;
 
-    mcom.id     AS id_comercial,
-    mcom.nombre AS medicina_comercial,
-    mcom.precio AS precio_comercial,
+-- 12. Operacion LEFT JOIN en base de dos tablas que dispongan 
+--     de la restriccion de FKs
+SELECT 
+    *
+FROM Clientes c
+LEFT JOIN Factura f ON c.Cedula = f.Cedula;
 
-    mcom.precio - mgen.precio as Diferencia
+-- 13. Operacion RIGHT JOIN en base de dos tablas que dispongan
+--     de la restriccion de FKs
+SELECT 
+    f.Id_Factura,
+    f.Fecha_Venta,
+    c.Nombre_Cliente
+FROM Clientes c
+RIGHT JOIN Factura f ON c.Cedula = f.Cedula;
 
-FROM clasificacion_medicinas cm
-JOIN medicinas mgen ON mgen.id = cm.medicina_gen
-JOIN medicinas mcom ON mcom.id = cm.medicina_com;
+-- 14. Operacion LEFT JOIN en base a una tabla con auto referencias
+SELECT 
+    c1.Id_Categoria,
+    c1.Nombre_Categoria AS categoria_principal,
+    c1.Rotacion_en_Ventas,
+    c2.Nombre_Categoria AS categoria_misma_rotacion
+FROM Categorias c1
+LEFT JOIN Categorias c2
+    ON c1.Rotacion_en_Ventas = c2.Rotacion_en_Ventas
+   AND c1.Id_Categoria <> c2.Id_Categoria;
 
--- Caso: Presentar una factura y sus detalles, que incluya:
---       datos de la farmacia, datos del cliente
---       datos de cabecera, medicinas vendidas
---       datos al pie de la factura y forma de pago
+-- 15. Ordenamiento sobre un atributo de forma descendente
+SELECT Nombre_Proveedor, Tipo_Suministro, Contacto
+FROM Proveedor
+ORDER BY Nombre_Proveedor DESC;
 
--- 1. Carga de datos en factura y detalles usando datos existentes
--- 2. select para cabecera de factura
--- 3. select para detalles de factura
--- 4. select para el pie de factura
+-- 16. Ordenamiento sobre dos atributos,
+--     primero ascendente y segundo descendente
+SELECT Nombre_Producto, Categoria, Precio
+FROM Datos_Producto
+ORDER BY Categoria ASC, Precio DESC;
 
-SELECT
-    /* DATOS DE LA EMPRESA (FARMACIA) */
-    de.razonsocial        AS farmacia,
-    de.ruc                AS ruc_farmacia,
-    de.direccion          AS direccion_farmacia,
-    de.telefono           AS telefono_farmacia,
-    de.email              AS email_farmacia,
+-- 17. Agrupamiento sobre un atributo que no posee restriccion de unicidad
+--     y una operacion de conteo
+SELECT 
+    p.Nombre_Proveedor AS Proveedor,
+    COUNT(dp.Id_Producto) AS Total_productos
+FROM Datos_Producto dp
+JOIN Proveedor p ON dp.Id_Proveedor = p.Id_Proveedor
+GROUP BY p.Nombre_Proveedor;
 
-    f.facturanumero,
-    f.fecha,
+-- 18. Proyeccion con tres columnas, una calculada con operadores matematicos
+SELECT 
+    Id_Factura,
+    Id_Producto,
+    Cantidad_Presentaciones,
+    Precio,
+    (Cantidad_Presentaciones * Precio) AS subtotal
+FROM Detalle_Factura;
 
-    c.cedula              AS cedula_cliente,
-    c.nombre              AS nombre_cliente,
-    c.apellido            AS apellido_cliente,
-    c.correo               AS email_cliente,
+-- 19. Proyeccion de tres columnas, una calculada con contenacion de caracteres
+SELECT 
+    CONCAT(Nombre_Cliente, ' - ', Direccion, ' - ') AS Info_cliente,
+    Contacto,
+    Correo
+FROM Clientes;
 
-    SUM(fd.cantidad * m.precio)           AS subtotal,
-    SUM(fd.cantidad * m.precio) * 0.15    AS IVA,
-    SUM(fd.cantidad * m.precio) * 1.15    AS total,
+-- 20. Proyeccion de tres columnas, una con concatenacion de caracteres
+--     y con una vista creada para contenerla
+CREATE VIEW V3 AS
+SELECT 
+    CONCAT(Nombre_Cliente, ' (', Direccion, ')') AS cliente,
+    Contacto,
+    Correo
+FROM Clientes;
 
-    f.forma_pago         AS metodo_pago
+SELECT * from V3;
 
-FROM facturas f
-
-JOIN clientes c
-    ON c.cedula = f.cedula
-
-JOIN datos_empresa de
-    ON de.ruc = '1712312345001'
-
-JOIN facturadetalle fd
-    ON fd.facturanumero = f.facturanumero
-
-JOIN medicinas m
-    ON m.id = fd.medicamento_id
-
-WHERE f.facturanumero = '0000000001'
-
-GROUP BY
-    de.razonsocial,
-    de.ruc,
-    de.direccion,
-    de.telefono,
-    de.email,
-    f.facturanumero,
-    f.fecha,
-    c.cedula,
-    c.nombre,
-    c.apellido,
-    c.correo,
-    f.forma_pago;
-
-SELECT
-fd.facturaNumero        AS numero_factura, 
-fd.medicamento_id,
-m.nombre                AS medicamento,
-fd.cantidad,
-fd.precio,
-(fd.cantidad * fd.precio) AS subtotal_detalle
-FROM facturadetalle fd
-JOIN medicinas m
-    ON m.id = fd.medicamento_id
-WHERE fd.facturaNumero = '0000000001';
-
-CREATE VIEW v_1
-AS
-SELECT
-    mgen.id     AS id_generica,
-    mgen.nombre AS medicina_generica,
-    mgen.precio AS precio_generico,
-
-    mcom.id     AS id_comercial,
-    mcom.nombre AS medicina_comercial,
-    mcom.precio AS precio_comercial,
-
-    mcom.precio - mgen.precio as Diferencia
-
-FROM clasificacion_medicinas cm
-JOIN medicinas mgen ON mgen.id = cm.medicina_gen
-JOIN medicinas mcom ON mcom.id = cm.medicina_com;
-
-select * from v_1;
-
--- where con 2 ANDs
-SELECT
-    pp.cedula_cliente AS cedula,
-    c.nombre AS cliente,
-    m.nombre AS medicamento,
-    m.precio AS precio_original,
-    pp.descuento,
-
-    (m.precio * pp.descuento / 100) AS valor_descuento,
-
-    (m.precio - (m.precio * pp.descuento / 100)) AS precio_final
-
-FROM pacientes_permanentes pp
-JOIN clientes c
-    ON pp.cedula_cliente = c.cedula
-JOIN medicinas m
-    ON pp.id_medicamento = m.id
-where precio > 0.50 and precio < 1.20;
-
--- not
-select
-  id,
-  nombre,
-  precio
-from medicinas
-where not precio > 2;
-
-select count(*) from pacientes_permanentes;
-
-select 
-  *
-from medicinas
-where id not In
-(
-    select id_medicamento from pacientes_permanentes
+-- 21. Subconsulta basada en FKs que retorne cierto valor
+SELECT 
+    dp.Nombre_Producto,
+    dp.Precio,
+    pr.Nombre_Proveedor AS proveedor
+FROM Datos_Producto dp
+JOIN Proveedor pr 
+    ON dp.Id_Proveedor = pr.Id_Proveedor
+WHERE dp.Id_Proveedor = (
+    SELECT Id_Proveedor
+    FROM Proveedor
+    WHERE Nombre_Proveedor = 'Disensa'
 );
-select * from medicinas;
 
-select 
-  *
-from medicinas m
-join pacientes_permanentes pp on m.id = pp.id_medicamento;
-
--- left join
-select 
-  *
-from medicinas m
-left join pacientes_permanentes pp on m.id = pp.id_medicamento
-where pp.id_medicamento is null;
+-- TALLER N2 REALIZADO POR PABLO CORTEZ

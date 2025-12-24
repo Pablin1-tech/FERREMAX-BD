@@ -1,3 +1,4 @@
+use FERREMAX;
 -- Busqueda especifica
 select cedula, nombre_cliente from Clientes where razon_social like 'DIST';
 
