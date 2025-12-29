@@ -20,296 +20,226 @@ select nombre_proveedor from proveedor where id_proveedor='1790010001001';
 select id_producto, nombre_producto from datos_producto where precio BETWEEN 20 AND 100;
 
 
--- Caso: Consultar los pacientes del plan de medicina frecuente
---       en una lista que incluya:
---       Nombre y cedula del paciente, nombre e ID de la medicina,
---       Descuento
-select Cedula_cliente as Cedula, (select nombre from Clientes where cedula = Cedula_cliente) as Cliente, Id_medicamento as ID, (select Nombre from Medicinas where Id = Id_medicamento) as Medicina, descuento from pacientes_permanentes;
-select Id_medicamento from Pacientes_permanentes where Via_administracion= 'Oral' AND Descuento > (select Descuento from Pacientes_permanentes where Cedula_cliente='0100000053');
+--=================================================================================================================================================--
 
--- Caso: listado de pacientes del plan pacientes permanentes
---       presente el precio final de la medicina junto con el 
---       precio sin descuento
+-- CONSULTAS ADICIONALES APLICADAS AL PROYECTO FINAL
 
-select 
-Cedula_cliente as Cedula, (select nombre from Clientes where cedula = Cedula_cliente) as Cliente, 
-Id_medicamento as ID, 
-(select Nombre from Medicinas where Id = Id_medicamento) as Medicina, 
-(SELECT precio from Medicinas where Id = Id_Medicamento) as Precio_original, 
-descuento, (SELECT Precio from Medicinas where Id = Id_Medicamento) * descuento as Descontado
-from pacientes_permanentes;
-
-SELECT 
-    Cedula_cliente AS Cedula,
-    (SELECT nombre FROM Clientes WHERE cedula = Cedula_cliente) AS Cliente, 
-    Id_medicamento AS ID, 
-    (SELECT Nombre FROM Medicinas WHERE Id = Id_medicamento) AS Medicina, 
-    (SELECT precio FROM Medicinas WHERE Id = Id_Medicamento) AS Precio_original, 
-    descuento,
-    (SELECT Precio FROM Medicinas WHERE Id = Id_Medicamento) * descuento AS Descontado,
-    (SELECT Precio FROM Medicinas WHERE Id = Id_Medicamento)
-      - ((SELECT Precio FROM Medicinas WHERE Id = Id_Medicamento) * descuento)
-      AS Precio_final
-FROM pacientes_permanentes;
-
-select * from pacientes_permanentes;
-
--- Caso: Las medicinas comerciales pueden ser reemplazadas
---       por sus correspondientes genericas.
---       Elaborar un listado que compare precios
---       de medicinas comerciales y genericas
-
-select * from medicinas;
-select * from clasificacion_medicinas;
+-- 1. Movimientos COMPRA
+CREATE OR REPLACE VIEW v_mov_compras_productos AS
 SELECT
-    clasificacion_medicinas.Medicina_COM AS id_comercial,
+    c.Fecha_Compra              AS fecha,
+    dc.Id_Producto              AS id_producto,
+    dp.Nombre_Producto          AS producto,
+    c.Id_Compra                 AS documento,
+    'COMPRA'                    AS tipo_movimiento,
+    dp.Stock_Presentacion       AS stock_actual,
+    dc.Cantidad_Presentaciones  AS entrada
+FROM Detalle_Compra dc
+JOIN Compra c
+    ON c.Id_Compra = dc.Id_Compra
+JOIN Datos_Producto dp
+    ON dp.Id_Producto = dc.Id_Producto;
 
-    (SELECT nombre
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_COM) AS medicina_comercial,
+select * from v_mov_compras_productos;
 
-    (SELECT precio
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_COM) AS precio_comercial,
-
-    clasificacion_medicinas.Medicina_GEN AS id_generica,
-
-    (SELECT nombre
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_GEN) AS medicina_generica,
-
-    (SELECT precio
-     FROM medicinas
-     WHERE id = clasificacion_medicinas.Medicina_GEN) AS precio_generico
-FROM clasificacion_medicinas;
-
--- Caso JOIN
+-- 2. Movimientos VENTA
+CREATE OR REPLACE VIEW v_mov_ventas_productos AS
 SELECT
-    pp.cedula_cliente AS cedula,
-    c.nombre AS cliente,
-    m.nombre AS medicamento,
-    m.precio AS precio_original,
-    pp.descuento,
+    f.Fecha_venta               AS fecha,
+    df.Id_Producto              AS id_producto,
+    dp.Nombre_Producto          AS producto,
+    f.Id_Factura                AS documento,
+    'VENTA'                     AS tipo_movimiento,
+    dp.Stock_Presentacion       AS stock_actual,
+    df.Cantidad_Presentaciones  AS salida
+FROM Detalle_Factura df
+JOIN Factura f
+    ON f.Id_Factura = df.Id_Factura
+JOIN Datos_Producto dp
+    ON dp.Id_Producto = df.Id_Producto;
 
-    (m.precio * pp.descuento / 100) AS valor_descuento,
+select * from v_mov_ventas_productos;
 
-    (m.precio - (m.precio * pp.descuento / 100)) AS precio_final
-
-FROM pacientes_permanentes pp
-JOIN clientes c
-    ON pp.cedula_cliente = c.cedula
-JOIN medicinas m
-    ON pp.id_medicamento = m.id;
-
+-- 3. KARDEX completo
 SELECT
-    cm.medicina_COM AS id_comercial,
-    mc.nombre       AS medicina_comercial,
-    mc.precio       AS precio_comercial,
+    fecha,
+    id_producto,
+    producto,
+    tipo_movimiento,
+    stock_actual,
+    entrada,
+    salida,
+    stock_actual
+      + SUM(
+            CASE tipo_movimiento
+                WHEN 'COMPRA' THEN entrada
+                WHEN 'VENTA'  THEN -salida
+            END
+        ) OVER (
+            PARTITION BY id_producto
+            ORDER BY fecha
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS saldo
+FROM (
+    SELECT
+        fecha,
+        id_producto,
+        producto,
+        tipo_movimiento,
+        stock_actual,
+        entrada,
+        0 AS salida
+    FROM v_mov_compras_productos
 
-    cm.medicina_GEN AS id_generica,
-    mg.nombre       AS medicina_generica,
-    mg.precio       AS precio_generico
-FROM clasificacion_medicinas cm
-JOIN medicinas mc
-    ON mc.id = cm.medicina_COM
-JOIN medicinas mg
-    ON mg.id = cm.medicina_GEN;
+    UNION ALL
 
--- Caso: Crear todas las combinaciones posibles entre la tabla 
---       de clientes y pacientes permanentes
---       Producto Cartesiano
+    SELECT
+        fecha,
+        id_producto,
+        producto,
+        tipo_movimiento,
+        stock_actual,
+        0 AS entrada,
+        salida
+    FROM v_mov_ventas_productos
+) movimientos
+ORDER BY id_producto, fecha;
 
-SELECT * FROM
-    clientes,
-    pacientes_permanentes
-WHERE
-    clientes.Cedula = pacientes_permanentes.Cedula_cliente;
-
-SELECT * FROM
-    Medicinas,
-    Pacientes_permanentes
-WHERE
-    Medicinas.Id = pacientes_permanentes.Id_Medicamento;
-SELECT 
-    c.Cedula,
-    c.Nombre,
-    m.Nombre,
-    pp.descuento,
-    m.Tipo  
-from
-    clientes c,
-    Medicinas m,  
-    pacientes_permanentes pp
-WHERE
-    m.id = pp.Id_medicamento
-and c.cedula = pp.Cedula_cliente;
-
--- JOIN
-SELECT 
-    c.Cedula,
-    c.Nombre,
-    m.Nombre,
-    pp.descuento,
-    m.Tipo  
-from 
-    pacientes_permanentes pp
-JOIN clientes c on c.cedula = pp.Cedula_cliente
-JOIN medicinas m ON m.id = pp.Id_medicamento;
-
+-- 4. STOCK critico
 SELECT
-    mgen.id     AS id_generica,
-    mgen.nombre AS medicina_generica,
-    mgen.precio AS precio_generico,
+    dp.Id_Producto,
+    dp.Nombre_Producto,
+    dp.Stock_Presentacion,
+    dp.Precio,
+    'STOCK CRÍTICO' AS alerta
+FROM Datos_Producto dp
+WHERE dp.Stock_Presentacion <= 20
+ORDER BY dp.Stock_Presentacion ASC;
 
-    mcom.id     AS id_comercial,
-    mcom.nombre AS medicina_comercial,
-    mcom.precio AS precio_comercial,
-
-    mcom.precio - mgen.precio as Diferencia
-
-FROM clasificacion_medicinas cm
-JOIN medicinas mgen ON mgen.id = cm.medicina_gen
-JOIN medicinas mcom ON mcom.id = cm.medicina_com;
-
--- Caso: Presentar una factura y sus detalles, que incluya:
---       datos de la farmacia, datos del cliente
---       datos de cabecera, medicinas vendidas
---       datos al pie de la factura y forma de pago
-
--- 1. Carga de datos en factura y detalles usando datos existentes
--- 2. select para cabecera de factura
--- 3. select para detalles de factura
--- 4. select para el pie de factura
-
+-- 5. Promociones vigentes
+CREATE OR REPLACE VIEW v_promociones_vigentes AS
 SELECT
-    /* DATOS DE LA EMPRESA (FARMACIA) */
-    de.razonsocial        AS farmacia,
-    de.ruc                AS ruc_farmacia,
-    de.direccion          AS direccion_farmacia,
-    de.telefono           AS telefono_farmacia,
-    de.email              AS email_farmacia,
+    Id_Promocion,
+    Nombre_Promocion,
+    Porcentaje_Descuento,
+    Fecha_Inicio,
+    Fecha_Fin,
+    CASE
+        WHEN CURDATE() BETWEEN Fecha_Inicio AND Fecha_Fin
+        THEN 'PROMOCIÓN ACTIVA'
+        ELSE 'PROMOCIÓN EXPIRADA'
+    END AS estado
+FROM Promocion;
 
-    f.facturanumero,
-    f.fecha,
+select * from v_promociones_vigentes;
 
-    c.cedula              AS cedula_cliente,
-    c.nombre              AS nombre_cliente,
-    c.apellido            AS apellido_cliente,
-    c.correo               AS email_cliente,
+-- 6. Productos que tengan y que no tengan promocion aplicada
+SELECT
+    dp.Id_Producto,
+    dp.Nombre_Producto,
+    dp.Precio,
 
-    SUM(fd.cantidad * m.precio)           AS subtotal,
-    SUM(fd.cantidad * m.precio) * 0.15    AS IVA,
-    SUM(fd.cantidad * m.precio) * 1.15    AS total,
+    CASE 
+        WHEN pr.Porcentaje_Descuento IS NULL 
+        THEN 0
+        ELSE pr.Porcentaje_Descuento
+    END AS Porcentaje_Descuento,
 
-    f.forma_pago         AS metodo_pago
+    dp.Precio
+      - (
+            dp.Precio *
+            CASE 
+                WHEN pr.Porcentaje_Descuento IS NULL 
+                THEN 0
+                ELSE pr.Porcentaje_Descuento
+            END / 100
+        ) AS precio_final
 
-FROM facturas f
+FROM Datos_Producto dp
 
-JOIN clientes c
-    ON c.cedula = f.cedula
+LEFT JOIN Detalle_Factura df
+    ON df.Id_Producto = dp.Id_Producto
 
-JOIN datos_empresa de
-    ON de.ruc = '1712312345001'
+LEFT JOIN Factura f
+    ON f.Id_Factura = df.Id_Factura
 
-JOIN facturadetalle fd
-    ON fd.facturanumero = f.facturanumero
-
-JOIN medicinas m
-    ON m.id = fd.medicamento_id
-
-WHERE f.facturanumero = '0000000001'
+LEFT JOIN Promocion pr
+    ON pr.Id_Promocion = f.Promocion
 
 GROUP BY
-    de.razonsocial,
-    de.ruc,
-    de.direccion,
-    de.telefono,
-    de.email,
-    f.facturanumero,
-    f.fecha,
-    c.cedula,
-    c.nombre,
-    c.apellido,
-    c.correo,
-    f.forma_pago;
+    dp.Id_Producto,
+    dp.Nombre_Producto,
+    dp.Precio,
+    pr.Porcentaje_Descuento;
 
+
+-- 7. Ventas totales por producto
 SELECT
-fd.facturaNumero        AS numero_factura, 
-fd.medicamento_id,
-m.nombre                AS medicamento,
-fd.cantidad,
-fd.precio,
-(fd.cantidad * fd.precio) AS subtotal_detalle
-FROM facturadetalle fd
-JOIN medicinas m
-    ON m.id = fd.medicamento_id
-WHERE fd.facturaNumero = '0000000001';
+    df.Id_Producto,
+    dp.Nombre_Producto,
+    SUM(df.Cantidad_Presentaciones) AS total_vendido,
+    SUM(df.Cantidad_Presentaciones * df.Precio) AS total_ingresos
+FROM Detalle_Factura df
+JOIN Datos_Producto dp
+    ON dp.Id_Producto = df.Id_Producto
+GROUP BY
+    df.Id_Producto,
+    dp.Nombre_Producto
+ORDER BY total_ingresos DESC;
 
-CREATE VIEW v_1
-AS
+-- 8. Detalle de factura (con subtotales calculados)
 SELECT
-    mgen.id     AS id_generica,
-    mgen.nombre AS medicina_generica,
-    mgen.precio AS precio_generico,
+    df.Id_Factura,
+    df.Id_Producto,
+    dp.Nombre_Producto,
+    df.Cantidad_Presentaciones,
+    df.Precio,
+    (df.Cantidad_Presentaciones * df.Precio) AS subtotal
+FROM Detalle_Factura df
+JOIN Datos_Producto dp
+    ON dp.Id_Producto = df.Id_Producto
+ORDER BY df.Id_Factura;
 
-    mcom.id     AS id_comercial,
-    mcom.nombre AS medicina_comercial,
-    mcom.precio AS precio_comercial,
-
-    mcom.precio - mgen.precio as Diferencia
-
-FROM clasificacion_medicinas cm
-JOIN medicinas mgen ON mgen.id = cm.medicina_gen
-JOIN medicinas mcom ON mcom.id = cm.medicina_com;
-
-select * from v_1;
-
--- where con 2 ANDs
+-- 9. Factura completa
 SELECT
-    pp.cedula_cliente AS cedula,
-    c.nombre AS cliente,
-    m.nombre AS medicamento,
-    m.precio AS precio_original,
-    pp.descuento,
+    f.Id_Factura,
+    f.Fecha_venta,
+    cl.Nombre_Cliente,
+    cl.Correo,
+    SUM(df.Cantidad_Presentaciones * df.Precio)               AS subtotal,
+    SUM(df.Cantidad_Presentaciones * df.Precio) * 0.15        AS IVA,
+    SUM(df.Cantidad_Presentaciones * df.Precio) * 1.15        AS total,
+    f.Forma_Pago
+FROM Factura f
+JOIN Clientes cl
+    ON cl.Cedula = f.Cedula
+JOIN Detalle_Factura df
+    ON df.Id_Factura = f.Id_Factura
+WHERE f.Id_Factura = 1
+GROUP BY
+    f.Id_Factura,
+    f.Fecha_venta,
+    cl.Nombre_Cliente,
+    cl.Correo,
+    f.Forma_Pago;
 
-    (m.precio * pp.descuento / 100) AS valor_descuento,
+-- 10. Clientes frecuentes con descuento aplicado
+SELECT
+    cl.Cedula,
+    cl.Nombre_Cliente,
+    dcf.Descuento,
+    CASE
+        WHEN dcf.Descuento >= 30 THEN 'CLIENTE PREMIUM'
+        WHEN dcf.Descuento >= 15 THEN 'CLIENTE FRECUENTE'
+        ELSE 'CLIENTE REGULAR'
+    END AS categoria_cliente
+FROM Clientes cl
+JOIN Descuento_Clientes_Frecuentes dcf
+    ON cl.Cedula = dcf.Cedula
+ORDER BY dcf.Descuento DESC;
 
-    (m.precio - (m.precio * pp.descuento / 100)) AS precio_final
-
-FROM pacientes_permanentes pp
-JOIN clientes c
-    ON pp.cedula_cliente = c.cedula
-JOIN medicinas m
-    ON pp.id_medicamento = m.id
-where precio > 0.50 and precio < 1.20;
-
--- not
-select
-  id,
-  nombre,
-  precio
-from medicinas
-where not precio > 2;
-
-select count(*) from pacientes_permanentes;
-
-select 
-  *
-from medicinas
-where id not In
-(
-    select id_medicamento from pacientes_permanentes
-);
-select * from medicinas;
-
-select 
-  *
-from medicinas m
-join pacientes_permanentes pp on m.id = pp.id_medicamento;
-
--- left join
-select 
-  *
-from medicinas m
-left join pacientes_permanentes pp on m.id = pp.id_medicamento
-where pp.id_medicamento is null;
+--=================================================================================================================================================--
+-- CONSULTAS APLICADAS AL PROYECTO FINAL
+-- REALIZADO POR PABLO CORTEZ
+-- PROYECTO FINAL
+-- NOMBRE PROYECTO: FERREMAX DB
