@@ -24,6 +24,7 @@ update Empleados
 set Jefe = 'Susana'
 where Cedula IN ('1111111', '6666666');
 
+
 update Empleados
 set Jefe = 'Marco'
 where Cedula = '3333333';
