@@ -38,7 +38,8 @@ FROM Detalle_Compra dc
 JOIN Compra c
     ON c.Id_Compra = dc.Id_Compra
 JOIN Datos_Producto dp
-    ON dp.Id_Producto = dc.Id_Producto;
+    ON dp.Id_Producto = dc.Id_Producto
+ORDER BY Id_Producto;
 
 select * from v_mov_compras_productos;
 

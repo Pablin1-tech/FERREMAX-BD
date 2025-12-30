@@ -1,3 +1,5 @@
+drop database FERREMAX;
+
 create DATABASE FERREMAX;
 use FERREMAX;
 -- Tabla de categorias y FK - PK
@@ -58,7 +60,7 @@ VALUES
 (35,'Adhesivos Especiales','Uso técnico','BAJA','SECCION 2');
 
 
---Tabla de proveedores y FK - PK
+
 create table Proveedor
 (
     Id_Proveedor CHAR(13) primary key,
@@ -127,7 +129,7 @@ VALUES
 ('1790010001040','Distribuidora Andes','CONSTRUCCION','0907776665','andes@ec.com','ANU');
 
 
---Tabla de clientes y FK - PK
+-- Tabla de clientes y FK - PK
 create table Clientes
 (
     Cedula CHAR(13) primary key,
@@ -322,7 +324,7 @@ VALUES
 (50,'Sellador Impermeable',29,'1790010001033','BALDE',1,25,510.00);
 
 
---Tabla de descuento a clientes frecuentes y FK - PK
+-- Tabla de descuento a clientes frecuentes y FK - PK
 create table Descuento_Clientes_Frecuentes
 (
     Cedula CHAR(13) primary key,
@@ -357,7 +359,7 @@ VALUES
 ('1790010010020',45.00);
 
 
---Tabla de compras y FK - PK
+-- Tabla de compras y FK - PK
 create table Compra
 (
     Id_Compra char(10) primary key,
@@ -414,7 +416,7 @@ VALUES
 ('0000000030','1790010001030','2025-08-15 16:30:00','CHEQ/');
 
 
---Tabla de detalles de compra y FK - PK
+-- Tabla de detalles de compra y FK - PK
 create table Detalle_Compra
 (
     Id_Detalle int primary key,
@@ -544,7 +546,7 @@ VALUES
 (75,'0000000030',35,2,820.00);
 
 
---Tabla de facturas y FK - PK
+-- Tabla de facturas y FK - PK
 create table Factura
 (
     Id_Factura int primary key,
@@ -612,7 +614,7 @@ VALUES
 (30,'0000000030','1790010010010','2025-08-16 17:30:00','CHEQ/','SI',001);
 
 
---Tabla de detalles de facturas y FK - PK
+-- Tabla de detalles de facturas y FK - PK
 create table Detalle_Factura
 (
     Id_Detalle_Factura int primary key,
